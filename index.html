@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#155eef">
+<meta name="description" content="Free everyday calculators and utility tools in Hindi, English and Bengali.">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Daily Utility Hub</title>
+<style>
+:root{--blue:#155eef;--ink:#172033;--muted:#64748b;--bg:#f4f7fb;--card:#fff;--line:#e5eaf2}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(120deg,#155eef,#7048e8);color:#fff;padding:25px 18px 32px}
+.wrap{max-width:980px;margin:auto}header h1{margin:0;font-size:clamp(25px,5vw,36px)}header p{margin:7px 0 18px;opacity:.92}
+.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+select,input,button{font:inherit}select{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+main{padding:22px 16px 50px}.intro{color:var(--muted);margin:0 0 18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 5px 18px #1720330a}
+.card h2{font-size:18px;margin:0 0 5px}.card p{font-size:14px;color:var(--muted);margin:0 0 14px}
+button{border:0;border-radius:10px;background:var(--blue);color:white;padding:10px 15px;cursor:pointer;font-weight:650}
+button.secondary{background:#edf2ff;color:#1747a6}.tool{display:none;margin-top:18px}.tool.active{display:block}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+label{display:block;font-size:14px;font-weight:600;color:#334155}input{display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #cbd5e1;border-radius:9px;background:white;color:var(--ink)}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}.result{margin-top:15px;padding:13px;border-radius:10px;background:#eff6ff;color:#123b83;font-weight:650;min-height:45px}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:18px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+ <div class="top"><div><h1 id="appTitle">Daily Utility Hub</h1><p id="tagline">Useful everyday tools — free and simple.</p></div>
+ <label><span id="languageLabel">Language</span><select id="language" aria-label="Choose language"><option value="en">English</option><option value="hi">हिन्दी</option><option value="bn">বাংলা</option></select></label></div>
+ <button id="installBtn" class="secondary hidden">Install App</button>
+</div></header>
+<main class="wrap">
+<p class="intro" id="intro">Choose a tool to get started. Calculations happen on your device.</p>
+<section class="grid" id="cards"></section>
+<section class="card tool" id="toolPanel">
+ <div class="top"><h2 id="toolTitle"></h2><button class="secondary" id="closeBtn">← <span id="backText">Back</span></button></div>
+ <div id="toolFields" class="fields"></div>
+ <div class="actions"><button id="calculateBtn">Calculate</button><button class="secondary" id="resetBtn">Reset</button></div>
+ <div class="result" id="result" aria-live="polite"></div>
+</section>
+</main>
+<footer id="footer">Daily Utility Hub · Free everyday tools · Your inputs stay on this device.</footer>
+<script>
+const T={
+en:{tag:"Useful everyday tools — free and simple.",lang:"Language",intro:"Choose a tool to get started. Calculations happen on your device.",back:"Back",calc:"Calculate",reset:"Reset",footer:"Daily Utility Hub · Free everyday tools · Your inputs stay on this device.",open:"Open tool",cards:[
+["age","🎂","Age Calculator","Calculate your age from date of birth."],["emi","🏦","EMI Calculator","Estimate monthly loan instalment."],["electric","⚡","Electricity Cost","Estimate bill cost from units consumed."],["convert","📏","Unit Converter","Convert common length, weight and temperature units."]],
+labels:{dob:"Date of birth",date:"Calculate age on",principal:"Loan amount (₹)",rate:"Annual interest rate (%)",months:"Loan tenure (months)",units:"Units consumed (kWh)",price:"Price per unit (₹)",from:"Value",value:"Enter value",unit:"Conversion",result:"Result"},errors:"Please enter valid values.",age:"Your age",emi:"Estimated monthly EMI",total:"Total payment",interest:"Total interest",bill:"Estimated electricity cost",converted:"Converted value",choose:"Choose conversion",options:["Metre → Feet","Feet → Metre","Kilogram → Pound","Pound → Kilogram","Celsius → Fahrenheit","Fahrenheit → Celsius"]},
+hi:{tag:"रोज़मर्रा के उपयोगी टूल — मुफ़्त और आसान।",lang:"भाषा",intro:"शुरू करने के लिए कोई टूल चुनें। गणना आपके डिवाइस पर होती है।",back:"वापस",calc:"गणना करें",reset:"रीसेट",footer:"Daily Utility Hub · मुफ़्त टूल · आपका डेटा इसी डिवाइस पर रहता है।",open:"खोलें",cards:[
+["age","🎂","आयु कैलकुलेटर","जन्मतिथि से अपनी उम्र जानें।"],["emi","🏦","EMI कैलकुलेटर","लोन की मासिक किस्त का अनुमान लगाएं।"],["electric","⚡","बिजली खर्च","खपत यूनिट के आधार पर बिल का अनुमान।"],["convert","📏","यूनिट कन्वर्टर","लंबाई, वजन और तापमान बदलें।"]],
+labels:{dob:"जन्मतिथि",date:"किस तारीख तक",principal:"लोन राशि (₹)",rate:"वार्षिक ब्याज दर (%)",months:"लोन अवधि (महीने)",units:"खपत (kWh)",price:"प्रति यूनिट कीमत (₹)",from:"मान",value:"मान दर्ज करें",unit:"कन्वर्ज़न",result:"परिणाम"},errors:"कृपया सही मान दर्ज करें।",age:"आपकी उम्र",emi:"अनुमानित मासिक EMI",total:"कुल भुगतान",interest:"कुल ब्याज",bill:"अनुमानित बिजली खर्च",converted:"बदला हुआ मान",choose:"कन्वर्ज़न चुनें",options:["मीटर → फीट","फीट → मीटर","किलोग्राम → पाउंड","पाउंड → किलोग्राम","सेल्सियस → फ़ारेनहाइट","फ़ारेनहाइट → सेल्सियस"]},
+bn:{tag:"প্রতিদিনের দরকারি টুল — বিনামূল্যে ও সহজ।",lang:"ভাষা",intro:"শুরু করতে একটি টুল বেছে নিন। হিসাব আপনার ডিভাইসেই হয়।",back:"ফিরে যান",calc:"হিসাব করুন",reset:"রিসেট",footer:"Daily Utility Hub · বিনামূল্যের টুল · আপনার তথ্য এই ডিভাইসেই থাকে।",open:"খুলুন",cards:[
+["age","🎂","বয়স ক্যালকুলেটর","জন্মতারিখ থেকে বয়স জানুন।"],["emi","🏦","EMI ক্যালকুলেটর","ঋণের মাসিক কিস্তির হিসাব করুন।"],["electric","⚡","বিদ্যুৎ খরচ","ব্যবহৃত ইউনিট অনুযায়ী বিলের হিসাব।"],["convert","📏","ইউনিট কনভার্টার","দৈর্ঘ্য, ওজন ও তাপমাত্রা রূপান্তর করুন।"]],
+labels:{dob:"জন্মতারিখ",date:"যে তারিখ পর্যন্ত",principal:"ঋণের পরিমাণ (₹)",rate:"বার্ষিক সুদের হার (%)",months:"ঋণের মেয়াদ (মাস)",units:"ব্যবহৃত ইউনিট (kWh)",price:"প্রতি ইউনিটের দাম (₹)",from:"মান",value:"মান লিখুন",unit:"রূপান্তর",result:"ফলাফল"},errors:"সঠিক মান লিখুন।",age:"আপনার বয়স",emi:"আনুমানিক মাসিক EMI",total:"মোট পেমেন্ট",interest:"মোট সুদ",bill:"আনুমানিক বিদ্যুৎ খরচ",converted:"রূপান্তরিত মান",choose:"রূপান্তর বেছে নিন",options:["মিটার → ফুট","ফুট → মিটার","কিলোগ্রাম → পাউন্ড","পাউন্ড → কিলোগ্রাম","সেলসিয়াস → ফারেনহাইট","ফারেনহাইট → সেলসিয়াস"]}}
+};
+let lang="en",current="";
+const $=id=>document.getElementById(id);
+function render(){
+ const t=T[lang]; $("tagline").textContent=t.tag;$("languageLabel").textContent=t.lang;$("intro").textContent=t.intro;$("backText").textContent=t.back;$("calculateBtn").textContent=t.calc;$("resetBtn").textContent=t.reset;$("footer").textContent=t.footer;
+ $("cards").innerHTML=t.cards.map(c=>`<article class="card"><h2>${c[1]} ${c[2]}</h2><p>${c[3]}</p><button onclick="openTool('${c[0]}')">${t.open}</button></article>`).join("");
+ if(current) openTool(current);
+}
+function field(id,label,type="number",extra=""){return `<label>${label}<input id="${id}" type="${type}" ${extra}></label>`}
+function openTool(id){
+ current=id;const t=T[lang],l=t.labels;$("toolPanel").classList.add("active");$("result").textContent="";
+ let html="";
+ if(id==="age") html=field("dob",l.dob,"date",'required')+field("asof",l.date,"date");
+ if(id==="emi") html=field("principal",l.principal)+field("rate",l.rate)+field("months",l.months);
+ if(id==="electric") html=field("units",l.units)+field("price",l.price);
+ if(id==="convert") html=field("value",l.value)+`<label>${l.unit}<select id="conversion">${t.options.map((o,i)=>`<option value="${i}">${o}</option>`).join("")}</select></label>`;
+ $("toolTitle").textContent=t.cards.find(c=>c[0]===id)[2];$("toolFields").innerHTML=html;
+ $("toolPanel").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function calculate(){
+ const t=T[lang],num=id=>Number($(id)?.value),valid=(...v)=>v.every(x=>Number.isFinite(x)&&x>=0);
+ let out="";
+ if(current==="age"){
+  const d=new Date($("dob").value+"T00:00:00"),end=$("asof").value?new Date($("asof").value+"T00:00:00"):new Date();
+  if(!$("dob").value||isNaN(d)||end<d){out=t.errors}else{let y=end.getFullYear()-d.getFullYear(),m=end.getMonth()-d.getMonth(),day=end.getDate()-d.getDate();if(day<0){m--;day+=new Date(end.getFullYear(),end.getMonth(),0).getDate()}if(m<0){y--;m+=12}out=`${t.age}: ${y} years, ${m} months, ${day} days`}
+ }
+ if(current==="emi"){
+  const p=num("principal"),r=num("rate")/1200,n=num("months");
+  if(!valid(p,r,n)||p<=0||n<=0)out=t.errors;else{const e=r===0?p/n:p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);out=`${t.emi}: ₹${e.toFixed(2)} · ${t.total}: ₹${(e*n).toFixed(2)} · ${t.interest}: ₹${(e*n-p).toFixed(2)}`}
+ }
+ if(current==="electric"){
+  const u=num("units"),p=num("price");out=valid(u,p)?`${t.bill}: ₹${(u*p).toFixed(2)} (excluding fixed charges, taxes and slab rates)` :t.errors;
+ }
+ if(current==="convert"){
+  const v=num("value"),i=Number($("conversion").value),f=[v*3.28084,v/3.28084,v*2.20462,v/2.20462,(v*9/5)+32,(v-32)*5/9][i];
+  out=Number.isFinite(v)?`${t.converted}: ${f.toFixed(4)}`:t.errors;
+ }
+ $("result").textContent=out;
+}
+$("language").addEventListener("change",e=>{lang=e.target.value;render()});
+$("calculateBtn").addEventListener("click",calculate);
+$("resetBtn").addEventListener("click",()=>{ $("toolFields").querySelectorAll("input").forEach(x=>x.value="");$("result").textContent=""});
+$("closeBtn").addEventListener("click",()=>{$("toolPanel").classList.remove("active");current=""});
+let installPrompt;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;$("installBtn").classList.remove("hidden")});
+$("installBtn").addEventListener("click",async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$("installBtn").classList.add("hidden")}});
+if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+render();
+</script>
+</body></html>
